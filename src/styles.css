@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@theme {
+  --color-light: #f2f4f7;
+  --color-light-surface: #f5f5f5;
+  --color-light-text-primary: #212121;
+  --color-light-text-secondary: #757575;
+  --color-light-border: #e0e0e0;
+  --color-light-accent: #2196f3;
+  --color-light-sidebar-background: #ffffff;
+  --color-light-sidebar-active: #2196f3;
+  --color-light-card-background: #f5f5f5;
+  --color-dark: #1a1a1d;
+  --color-dark-surface: #262629;
+  --color-dark-accent: #64b5f6;
+  --color-dark-accent-hover: #90caf9;
+  --color-dark-sidebar-active: #64b5f6;
+  --color-dark-card-background: #262629;
+}
