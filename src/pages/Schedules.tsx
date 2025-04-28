@@ -1,10 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaClock, FaUsers, FaSearch, FaTrophy, FaChartBar, FaDownload } from "react-icons/fa";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 
 export default function TimeSheetDashboard() {
   const [view, setView] = useState("monthly");
   const [search, setSearch] = useState("");
+  const [lastUpdated, setLastUpdated] = useState("");
+
+  useEffect(() => {
+    const now = new Date();
+    const formatted = now.toLocaleString();
+    setLastUpdated(formatted);
+  }, []);
 
   const employees = [
     {
@@ -41,7 +48,7 @@ export default function TimeSheetDashboard() {
 
   const bestPerformer = [...filteredEmployees].sort(
     (a, b) =>
-      (view === "monthly" ? b.totalHours : b.weeklyHours) - 
+      (view === "monthly" ? b.totalHours : b.weeklyHours) -
       (view === "monthly" ? a.totalHours : a.weeklyHours)
   )[0]?.name;
 
@@ -64,44 +71,29 @@ export default function TimeSheetDashboard() {
     return Math.min((totalHours / goal) * 100, 100);
   };
 
-  // Download the timesheet data as a Word document
   const downloadWordFile = () => {
     const doc = new Document();
 
     doc.addSection({
       children: [
-        new Paragraph({
-          children: [new TextRun("🕒 Company Timesheet Dashboard").bold().size(24)],
-        }),
-        new Paragraph({
-          children: [new TextRun(`Total ${view === "monthly" ? "Monthly" : "Weekly"} Hours: ${companyTotalHours} hrs`)],
-        }),
-        new Paragraph({
-          children: [new TextRun(`Best Performer: ${bestPerformer || "N/A"}`)],
-        }),
-        new Paragraph({
-          children: [new TextRun(`Team Average Hours: ${(companyTotalHours / filteredEmployees.length || 0).toFixed(1)} hrs`)],
-        }),
-        new Paragraph({
-          children: [new TextRun("Employee Timesheets:")],
-        }),
-        ...filteredEmployees.map((emp) => 
+        new Paragraph({ children: [new TextRun("🕒 Company Timesheet Dashboard").bold().size(24)] }),
+        new Paragraph({ text: `Report View: ${view.charAt(0).toUpperCase() + view.slice(1)}` }),
+        new Paragraph({ text: `Last Updated: ${lastUpdated}` }),
+        new Paragraph({ text: `Total ${view === "monthly" ? "Monthly" : "Weekly"} Hours: ${companyTotalHours} hrs` }),
+        new Paragraph({ text: `Best Performer: ${bestPerformer || "N/A"}` }),
+        new Paragraph({ text: `Team Average Hours: ${(companyTotalHours / filteredEmployees.length || 0).toFixed(1)} hrs` }),
+        new Paragraph({ text: "Employee Timesheets:" }),
+        ...filteredEmployees.map((emp) =>
           new Paragraph({
             children: [
-              new TextRun(`${emp.name}: ${view === "monthly" ? emp.totalHours : emp.weeklyHours} hrs`),
-              new TextRun(` | Goal: ${getGoalProgress(emp)}%`),
+              new TextRun(`${emp.name}: ${view === "monthly" ? emp.totalHours : emp.weeklyHours} hrs | `),
+              new TextRun(`Goal Progress: ${getGoalProgress(emp).toFixed(1)}%`).bold(),
             ],
           })
         ),
-        new Paragraph({
-          children: [new TextRun("Project Time Summary:")],
-        }),
-        ...getProjectSummary().map(({ project, totalHours }) => 
-          new Paragraph({
-            children: [
-              new TextRun(`${project}: ${totalHours} hrs`)
-            ],
-          })
+        new Paragraph({ text: "Project Time Summary:" }),
+        ...getProjectSummary().map(({ project, totalHours }) =>
+          new Paragraph({ text: `${project}: ${totalHours} hrs` })
         ),
       ],
     });
@@ -116,7 +108,8 @@ export default function TimeSheetDashboard() {
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h2 className="text-2xl font-bold mb-6">🕒 Company Timesheet Dashboard</h2>
+      <h2 className="text-2xl font-bold mb-2">🕒 Company Timesheet Dashboard</h2>
+      <p className="text-sm text-gray-600 mb-6">Last Updated: <span className="font-medium">{lastUpdated}</span></p>
 
       {/* Search and View Toggle */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">

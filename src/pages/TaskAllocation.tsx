@@ -1,172 +1,279 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  Typography,
+  Grid,
+  Paper,
+  TextField,
+  Autocomplete,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  FormControlLabel,
+  Checkbox,
+  IconButton,
+} from '@mui/material';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 
-export default function TaskAllocation() {
-  const [tasks, setTasks] = useState([]);
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    assignedTo: "",
-    startDate: "",
-    endDate: "",
+// Sample data
+const employees = [
+  { id: 'EMP001', name: 'John Doe' },
+  { id: 'EMP002', name: 'Jane Smith' },
+  { id: 'EMP003', name: 'Alice Johnson' },
+];
+
+// Sample categories for tasks
+const taskCategories = ['Design', 'Development', 'Testing', 'Research'];
+
+const TaskAllocationPage = ({ loggedInUser }) => {
+  const [task, setTask] = useState({
+    employee: null,
+    assigner: loggedInUser || null,
+    title: '',
+    description: '',
+    deadline: '',
+    category: 'Development',
+    priority: 'Medium',
+    status: 'Pending',
+    notifyTeam: false,
+    file: null, // For the file upload
   });
-  const [filterType, setFilterType] = useState("Date");
 
-  // Handle input change
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const [assignedTasks, setAssignedTasks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState(null);
+  const [showAlert, setShowAlert] = useState(false);
+
+  const [editTaskIndex, setEditTaskIndex] = useState(null);
+
+  const handleChange = (field) => (e) => {
+    setTask({ ...task, [field]: e.target.value });
   };
 
-  // Add Task
-  const addTask = () => {
-    if (!form.title || !form.assignedTo) return;
-    setTasks([
-      ...tasks,
-      {
-        ...form,
-        status: "Pending",
-        id: Date.now(),
-      },
-    ]);
-    setForm({
-      title: "",
-      description: "",
-      assignedTo: "",
-      startDate: "",
-      endDate: "",
-    });
+  const handleEmployeeChange = (e, value) => {
+    setTask({ ...task, employee: value });
   };
 
-  // Delete Task
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  const handleCategoryChange = (e) => {
+    setTask({ ...task, category: e.target.value });
   };
 
-  // Complete Task
-  const completeTask = (id) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, status: "Complete" } : task
-      )
-    );
+  const handleFileChange = (e) => {
+    setTask({ ...task, file: e.target.files[0] });
   };
 
-  // Filter
-  const filteredTasks = [...tasks].sort((a, b) => {
-    if (filterType === "Name") {
-      return a.assignedTo.localeCompare(b.assignedTo);
+  const handleSubmit = () => {
+    if (!task.employee || !task.title || !task.description || !task.deadline) {
+      setAlert({ type: 'error', message: 'Please fill all fields' });
+      setShowAlert(true);
+      return;
     }
-    return new Date(a.endDate) - new Date(b.endDate);
-  });
+
+    setLoading(true);
+
+    setTimeout(() => {
+      if (editTaskIndex !== null) {
+        const updatedTasks = [...assignedTasks];
+        updatedTasks[editTaskIndex] = task;
+        setAssignedTasks(updatedTasks);
+        setEditTaskIndex(null);
+      } else {
+        setAssignedTasks([...assignedTasks, task]);
+      }
+
+      setTask({
+        employee: null,
+        assigner: loggedInUser || null,
+        title: '',
+        description: '',
+        deadline: '',
+        category: 'Development',
+        priority: 'Medium',
+        status: 'Pending',
+        notifyTeam: false,
+        file: null, // Reset file
+      });
+
+      setLoading(false);
+      setAlert({ type: 'success', message: editTaskIndex !== null ? 'Task updated successfully!' : 'Task assigned successfully!' });
+      setShowAlert(true);
+    }, 2000);
+  };
+
+  const handleCloseAlert = () => setShowAlert(false);
+
+  const handleTaskStatusChange = (index, status) => {
+    const updatedTasks = [...assignedTasks];
+    updatedTasks[index].status = status;
+    setAssignedTasks(updatedTasks);
+  };
+
+  const handleEditTask = (index) => {
+    setTask({ ...assignedTasks[index] });
+    setEditTaskIndex(index);
+  };
 
   return (
-    <div className="bg-gray-100 p-6 min-h-screen rounded-xl">
-      <h1 className="text-2xl font-semibold mb-4">Task Allocation</h1>
+    <Box p={4} height="100vh" bgcolor="#f5f5f5" display="flex" flexDirection="column" alignItems="center">
+      {/* Alert */}
+      {showAlert && (
+        <Snackbar open={showAlert} autoHideDuration={6000} onClose={handleCloseAlert}>
+          <Alert onClose={handleCloseAlert} severity={alert.type} sx={{ width: '100%' }}>
+            {alert.message}
+          </Alert>
+        </Snackbar>
+      )}
 
-      {/* Form */}
-      <div className="bg-white rounded-lg shadow p-6 space-y-4 max-w-4xl">
-        <input
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          className="w-full p-3 border border-gray-200 rounded-md"
-          placeholder="Task"
-        />
-        <input
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          className="w-full p-3 border border-gray-200 rounded-md"
-          placeholder="Description"
-        />
-        <div className="flex flex-wrap gap-4">
-          <input
-            name="assignedTo"
-            value={form.assignedTo}
-            onChange={handleChange}
-            className="flex-1 p-3 border border-gray-200 rounded-md"
-            placeholder="Assigned to"
-          />
-          <input
-            type="date"
-            name="startDate"
-            value={form.startDate}
-            onChange={handleChange}
-            className="flex-1 p-3 border border-gray-200 rounded-md"
-            placeholder="Start Date"
-          />
-          <input
-            type="date"
-            name="endDate"
-            value={form.endDate}
-            onChange={handleChange}
-            className="flex-1 p-3 border border-gray-200 rounded-md"
-            placeholder="End Date"
-          />
-        </div>
-        <button
-          onClick={addTask}
-          className="mt-2 px-4 py-2 bg-black text-white rounded-md"
-        >
-          Add Task
-        </button>
-      </div>
+      {/* Task Assignment Section */}
+      <Paper sx={{ p: 3, maxWidth: 900, width: '100%', marginTop: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', backgroundColor: '#ffffff' }}>
+        <Typography variant="h5" color="primary" mb={3} textAlign="center">
+          {editTaskIndex !== null ? 'Edit Task' : 'Assign New Task'}
+        </Typography>
 
-      {/* Filter */}
-      <div className="mt-6 flex items-center space-x-2 text-sm font-medium">
-        <p>Filter by :</p>
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-          className="border p-2 rounded-md bg-white shadow-sm"
-        >
-          <option value="Date">Date</option>
-          <option value="Name">Name</option>
-        </select>
-      </div>
+        <Grid container spacing={3}>
+          {/* Employee Selection */}
+          <Grid item xs={12}>
+            <Autocomplete
+              options={employees}
+              getOptionLabel={(option) => `${option.name} (${option.id})`}
+              renderInput={(params) => <TextField {...params} label="Select Employee" variant="outlined" fullWidth />}
+              value={task.employee}
+              onChange={handleEmployeeChange}
+            />
+          </Grid>
 
-      {/* Task List */}
-      <div className="mt-4 space-y-4">
-        {filteredTasks.map((task) => (
-          <div
-            key={task.id}
-            className="bg-white p-4 rounded-lg shadow flex justify-between items-center"
-          >
-            <div className="flex items-center space-x-4">
-              <div className="text-xl">📄</div>
-              <div>
-                <p className="font-bold">{task.title}</p>
-                <p className="text-sm text-gray-500">{task.assignedTo}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-1 text-sm text-gray-600">
-                <span>📅</span>
-                <span>{new Date(task.endDate).toLocaleDateString()}</span>
-              </div>
-              {task.status === "Complete" ? (
-                <button className="bg-green-600 text-white text-xs px-4 py-1 rounded-full">
-                  Complete
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => completeTask(task.id)}
-                    className="bg-black text-white text-xs px-4 py-1 rounded-full"
-                  >
-                    View Detail
-                  </button>
-                  <button
-                    onClick={() => deleteTask(task.id)}
-                    className="bg-red-500 text-white text-xs px-4 py-1 rounded-full"
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+          {/* Task Title */}
+          <Grid item xs={12}>
+            <TextField
+              label="Task Title"
+              fullWidth
+              value={task.title}
+              onChange={handleChange('title')}
+              variant="outlined"
+            />
+          </Grid>
+
+          {/* Task Description */}
+          <Grid item xs={12}>
+            <TextField
+              label="Description"
+              multiline
+              rows={4}
+              fullWidth
+              value={task.description}
+              onChange={handleChange('description')}
+              variant="outlined"
+            />
+          </Grid>
+
+          {/* Task Deadline */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Deadline"
+              type="date"
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              value={task.deadline}
+              onChange={handleChange('deadline')}
+              variant="outlined"
+            />
+          </Grid>
+
+          {/* Task Category */}
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Category</InputLabel>
+              <Select value={task.category} onChange={handleCategoryChange}>
+                {taskCategories.map((category) => (
+                  <MenuItem key={category} value={category}>
+                    {category}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* File Upload */}
+          <Grid item xs={12}>
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={<AttachFileIcon />}
+              fullWidth
+              sx={{ padding: '12px', borderRadius: '8px' }}
+            >
+              Upload File
+              <input type="file" hidden onChange={handleFileChange} />
+            </Button>
+            {task.file && (
+              <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>
+                Selected file: {task.file.name}
+              </Typography>
+            )}
+          </Grid>
+
+          {/* Notify Team Option */}
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={<Checkbox checked={task.notifyTeam} onChange={handleChange('notifyTeam')} />}
+              label="Notify Team Member"
+            />
+          </Grid>
+
+          {/* Submit Button */}
+          <Grid item xs={12}>
+            <Button variant="contained" color="primary" fullWidth onClick={handleSubmit} sx={{ padding: '12px', borderRadius: '8px' }}>
+              {loading ? <CircularProgress size={24} color="inherit" /> : editTaskIndex !== null ? 'Save Changes' : 'Assign Task'}
+            </Button>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Assigned Tasks List */}
+      <Paper sx={{ p: 3, maxWidth: 900, width: '100%', marginTop: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', backgroundColor: '#ffffff' }}>
+        <Typography variant="h6" color="primary" mb={2}>
+          Assigned Tasks
+        </Typography>
+
+        {assignedTasks.length === 0 ? (
+          <Typography variant="body1" color="textSecondary">
+            No tasks assigned yet.
+          </Typography>
+        ) : (
+          assignedTasks.map((task, index) => (
+            <Box key={index} sx={{ mb: 2, padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+              <Typography variant="body1" fontWeight="bold">
+                Employee: {task.employee.name} ({task.employee.id})
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                <strong>Task Title:</strong> {task.title}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                <strong>Description:</strong> {task.description}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                <strong>Deadline:</strong> {task.deadline}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                <strong>Category:</strong> {task.category}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                <strong>Status:</strong> {task.status}
+              </Typography>
+              <Button variant="outlined" color="secondary" onClick={() => handleEditTask(index)} sx={{ mt: 2 }}>
+                Edit Task
+              </Button>
+            </Box>
+          ))
+        )}
+      </Paper>
+    </Box>
   );
-}
+};
+
+export default TaskAllocationPage;

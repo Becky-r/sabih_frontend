@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaChartLine, FaUsers, FaClock, FaCheck, FaExclamationTriangle, FaFileWord } from "react-icons/fa";
-import { Document, Packer, Paragraph, TextRun } from "docx";
+import { Document, Packer, Paragraph } from "docx";
 import { saveAs } from "file-saver";
 
 export default function FrontendTeamReport() {
@@ -34,12 +34,14 @@ export default function FrontendTeamReport() {
   });
 
   const [selectedEmployee, setSelectedEmployee] = useState(frontendTeam[0]);
+  const [lastUpdated, setLastUpdated] = useState("");
 
   useEffect(() => {
-    // Simulating dynamic data fetching
-  }, [selectedEmployee]);
+    const now = new Date();
+    const formatted = now.toLocaleString();
+    setLastUpdated(formatted);
+  }, [selectedEmployee, taskData]);
 
-  // Toggle Task Completion
   const toggleTaskCompletion = (employee, index) => {
     setTaskData((prev) => {
       const updatedTasks = [...prev[employee]];
@@ -48,7 +50,6 @@ export default function FrontendTeamReport() {
     });
   };
 
-  // Download Report Function
   const downloadReport = async () => {
     const tasks = taskData[selectedEmployee];
     const attendance = attendanceData[selectedEmployee];
@@ -61,6 +62,7 @@ export default function FrontendTeamReport() {
               text: `${selectedEmployee} - Frontend Team Report`,
               heading: "Title",
             }),
+            new Paragraph(`Last Updated: ${lastUpdated}`),
             new Paragraph("🧾 Attendance Summary:"),
             new Paragraph(`• Days Worked: ${attendance.daysWorked}`),
             new Paragraph(`• Days Off: ${attendance.daysOff}`),
@@ -70,10 +72,8 @@ export default function FrontendTeamReport() {
             new Paragraph(`• Error Rate: ${performanceData.frontend.errorRate}%`),
             new Paragraph(`• Uptime: ${performanceData.frontend.uptime}%`),
             new Paragraph("📋 Task List:"),
-            ...tasks.map((t, i) =>
-              new Paragraph(
-                `• ${t.task} - ${t.isFinished ? "✅ Completed" : "⏳ In Progress"}`
-              )
+            ...tasks.map((t) =>
+              new Paragraph(`• ${t.task} - ${t.isFinished ? "✅ Completed" : "⏳ In Progress"}`)
             ),
           ],
         },
@@ -86,7 +86,7 @@ export default function FrontendTeamReport() {
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-2">
         <h2 className="text-2xl font-bold">📊 Frontend Team Report Dashboard</h2>
         <button
           onClick={downloadReport}
@@ -94,6 +94,11 @@ export default function FrontendTeamReport() {
         >
           <FaFileWord /> Download Word
         </button>
+      </div>
+
+      {/* Last Updated */}
+      <div className="mb-4 text-sm text-gray-500">
+        Last Updated: {lastUpdated}
       </div>
 
       {/* Employee Selection */}

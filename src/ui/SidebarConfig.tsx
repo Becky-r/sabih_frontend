@@ -20,11 +20,11 @@ export const sidebarSections: SidebarSectionData[] = [
     items: [
       { icon: DashboardIcon, label: 'Dashboard', path: '/dashboard' },
       { icon: GroupsIcon, label: 'Attendance', path: '/attendance' },
+      { icon: MdAppRegistration , label: 'Registration',path: '/Registration' },
+      { icon: HiOutlineChatBubbleOvalLeft , label: 'IDFrom',path: '/IDFrom' },
       { icon:  HiOutlineBriefcase, label: 'Projects',path: '/projects' },
       { icon: HiOutlineClipboardList, label: 'TaskAllocation',path: '/TaskAllocation' },
       { icon: HiOutlineUserGroup, label: 'Client',path: '/Client' },
-      { icon: MdAppRegistration , label: 'Registration',path: '/Registration' },
-      
       { icon: HiOutlineChatBubbleOvalLeft , label: 'Chat',path: '/Chat' },
     ],
   },

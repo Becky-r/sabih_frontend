@@ -41,6 +41,7 @@ export default function Header({ setSidebarToggled }: HeaderProps) {
         </button>
         <button className="px-4 py-2 rounded">
           <NotificationsIcon />
+          
         </button>
         <button
           className="px-4 py-2 rounded"
@@ -49,6 +50,7 @@ export default function Header({ setSidebarToggled }: HeaderProps) {
           {theme === 'dark' ? <ContrastIcon /> : <DarkModeIcon />}
         </button>
         <Avatar sx={{ width: 30, height: 30 }}>JD</Avatar>
+        
         <div className="flex flex-col px-2">
           <span className="text-sm">John Doe</span>
           <span className="text-xs text-gray-500">Frontend Developer</span>

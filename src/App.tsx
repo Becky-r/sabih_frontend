@@ -17,6 +17,7 @@ import Client from './pages/Client';
 import Registration from './pages/Registration';
 import Report from './pages/Report';
 import Chat from './pages/Chat';
+import IDFrom from './pages/IDFrom';
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const router = createBrowserRouter([
       { path:'Registration', element: <Registration /> },
       { path:'Report', element: <Report /> },
       { path:'Chat', element: <Chat /> },
+      { path:'IDFrom', element: <IDFrom /> },
       
     ],
   },
